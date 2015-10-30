@@ -1,4 +1,4 @@
-import Text.Template.String
+import Text.Template
 
 main :: IO ()
 main = do
