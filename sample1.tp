@@ -1,0 +1,8 @@
+My name is ${name}.
+My message is following.
+
+@{message}
+
+Thank you.
+I will pay \$30,000 for you.
+

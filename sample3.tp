@@ -1,0 +1,6 @@
+\if ${name} \== ${"Yoshikuni"}
+\then
+My name is Yosh.
+\else
+My name is ${name}.
+\end
