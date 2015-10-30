@@ -1,6 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 
-module Text.Template (template) where
+module Text.Template (StringLike, template) where
 
 import Prelude hiding (mapM)
 import Control.Applicative

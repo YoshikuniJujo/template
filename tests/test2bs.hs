@@ -7,7 +7,7 @@ import Text.Template
 
 main :: IO ()
 main = do
-	t <- BS.readFile "sample1.tp"
+	t <- BS.readFile "samples/sample1.tp"
 	mr <- template convert get t
 	maybe (return ()) BS.putStr mr
 
@@ -17,4 +17,5 @@ convert "i" = map (BSC.pack . show) [1 :: Int ..]
 convert _ = []
 
 get :: BS.ByteString -> IO [BS.ByteString]
-get = mapM BS.readFile . (`map` ["1", "2"]) . (++) . BSC.unpack
+get = mapM BS.readFile
+	. (`map` ["1", "2"]) . (++) . ("samples/" ++) . BSC.unpack

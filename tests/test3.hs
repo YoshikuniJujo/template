@@ -2,7 +2,7 @@ import Text.Template
 
 main :: IO ()
 main = do
-	t <- readFile "sample3.tp"
+	t <- readFile "samples/sample3.tp"
 	mr <- template convert get t
 	maybe (return ()) putStr mr
 
@@ -12,4 +12,4 @@ convert "i" = map show [1 :: Int ..]
 convert _ = []
 
 get :: String -> IO [String]
-get = mapM readFile . (`map` ["1", "2"]) . (++)
+get = mapM readFile . (`map` ["1", "2"]) . (++) . ("samples/" ++)
