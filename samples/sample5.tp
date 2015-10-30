@@ -1,0 +1,6 @@
+\if ${name} \== ${"Yoshikuni"}
+\then
+hoge
+\else
+foo
+\end

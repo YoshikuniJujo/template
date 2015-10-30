@@ -21,7 +21,7 @@ template :: (Applicative m, Monad m, StringLike s, IsString s) =>
 	(s -> [s]) -> (s -> m [s]) -> s -> m (Maybe s)
 template c g t = listToMaybe . getZipList
 	<$> maybe (return $ ZipList [])
-		(templateS (ZipList . c) ((ZipList <$>) . g)) (syntax t)
+		(templateS (ZipList . c) ((ZipList <$>) . g)) (checkInf <$> syntax t)
 
 templateS :: (Applicative m, Monad m, Monoid s, Eq s) =>
 	(s -> ZipList s) -> (s -> m (ZipList s)) -> Syntax s -> m (ZipList s)
@@ -35,9 +35,12 @@ templateS cnv get (If (vl1, vl2) th el) = do
 	es <- templateSs cnv get el
 	return $ (\v1 v2 t e -> if v1 == v2 then t else e)
 		<$> val1 <*> val2 <*> ts <*> es
-templateS cnv get (List ss) = ZipList . (: []) . mconcat . getZipList
+templateS cnv get (List ss) = pure . mconcat . getZipList
+	<$> ((mconcat <$>) . sequenceA) <$> mapM (templateS cnv get) ss
+templateS cnv get (OList ss) = ZipList . (: []) . mconcat . getZipList
 	<$> ((mconcat <$>) . sequenceA) <$> mapM (templateS cnv get) ss
 templateS _cnv _get (Plain p) = return $ pure p
+templateS _cnv _get (OPlain p) = return $ ZipList [p]
 
 templateSs :: (Applicative m, Monad m, Monoid s, Eq s) =>
 	(s -> ZipList s) -> (s -> m (ZipList s)) -> [Syntax s] -> m (ZipList s)
@@ -46,9 +49,26 @@ templateSs cnv get ss = ((mconcat <$>) . sequenceA) <$> mapM (templateS cnv get)
 data Syntax s
 	= Var s | Get s | Str s
 	| If ([Syntax s], [Syntax s]) [Syntax s] [Syntax s]
-	| List [Syntax s]
-	| Plain s
+	| List [Syntax s] | OList [Syntax s]
+	| Plain s | OPlain s
 	deriving Show
+
+isInf :: Syntax s -> Bool
+isInf (List _) = True
+isInf (Plain _) = True
+isInf (If (v1, v2) t e) = all (all isInf) [v1, v2, t, e]
+isInf _ = False
+
+toOnce :: Syntax s -> Syntax s
+toOnce (List ss) = OList ss
+toOnce (Plain p) = OPlain p
+toOnce s = s
+
+checkInf :: Syntax s -> Syntax s
+checkInf (List ss) | all isInf ss = List . map toOnce $ map checkInf ss
+checkInf (If (v1, v2) t e) | all isInf (concat [v1, v2, t, e]) =
+	If (map toOnce v1, v2) t e
+checkInf s = s
 
 syntax :: (StringLike s, IsString s) => s -> Maybe (Syntax s)
 syntax s = case parses . processIf $ tokens s of
