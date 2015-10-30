@@ -1,6 +1,7 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, PatternGuards #-}
+{-# OPTIONS_GHC -fno-warn-tabs #-}
 
-module Text.Template (StringLike, template) where
+module Text.Template (template, StringLike, StringLikeList) where
 
 import Prelude hiding (mapM)
 import Control.Applicative
